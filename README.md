@@ -86,4 +86,8 @@ This is the place for you to write reflections:
 
 #### Reflection Subscriber-1
 
+1. Pada tutorial ini, `RwLock<Vec<Notification>>` diperlukan karena data notifikasi disimpan secara global dan diakses oleh banyak request secara bersamaan. Dalam aplikasi web Rocket, beberapa thread dapat membaca daftar notifikasi pada saat yang sama (misalnya endpoint list), sementara thread lain bisa menambah notifikasi baru (endpoint receive). Tanpa mekanisme sinkronisasi, akses bersamaan ini bisa menyebabkan data race dan perilaku tidak terduga. `RwLock` cocok karena pola aksesnya cenderung read-heavy: banyak operasi baca, sedikit operasi tulis. Dengan `RwLock`, banyak reader bisa berjalan paralel selama tidak ada writer. Jika memakai `Mutex`, baik operasi baca maupun tulis tetap harus antre satu per satu karena lock bersifat eksklusif, sehingga concurrency untuk operasi baca menjadi kurang optimal.
+
+2. Rust tidak mengizinkan kita langsung memutasi `static` variable seperti di Java karena Rust menegakkan jaminan keamanan memori dan thread safety pada waktu kompilasi. `static` bernilai global dan berumur sepanjang program, sehingga jika bisa dimutasi bebas akan sangat mudah menimbulkan race condition. Karena itu, mutable global state di Rust harus dibungkus tipe sinkronisasi yang aman (misalnya `RwLock`, `Mutex`, atau struktur concurrent seperti `DashMap`) agar aturan aksesnya jelas dan aman lintas thread. `lazy_static` dipakai untuk inisialisasi global yang dilakukan saat runtime (lazy initialization), karena inisialisasi `static` biasa di Rust terbatas pada ekspresi konstan. Jadi, bukan berarti Rust tidak bisa punya global mutable state, tetapi Rust memaksa kita mengelolanya secara eksplisit dan aman.
+
 #### Reflection Subscriber-2
