@@ -1,7 +1,6 @@
 use rocket::serde::json::Json;
 
 use bambangshop_receiver::Result;
-use crate::controller::notification;
 use crate::model::notification::Notification;
 use crate::model::subscriber::SubscriberRequest;
 use crate::service::notification::NotificationService;
@@ -22,7 +21,7 @@ pub fn unsubscribe(product_type: &str) -> Result<Json<SubscriberRequest>> {
     };
 }
 
-#[get("/receive", data= "<notification>")]
+#[post("/receive", data= "<notification>")]
 pub fn receive(notification: Json<Notification>) -> Result<Json<Notification>> {
     return match NotificationService::receive_notification(notification.into_inner()) {
         Ok(f) => Ok(Json::from(f)),
